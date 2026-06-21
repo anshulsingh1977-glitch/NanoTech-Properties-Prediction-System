@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>History — Nanotech</title><link rel="stylesheet" href="styles.css"></head>
+<body>
+  <div class="navbar">
+    <div class="brand"><img src="5742b17f-782e-4e38-8477-e62b30fb2b2f.png" alt="logo"><h1>Nanotech Properties</h1></div>
+    <div class="nav-links">
+      <a href="dashboard.html">Dashboard</a><a href="predict.html">Predict</a><a href="upload.html">Upload CSV</a>
+    </div>
+  </div>
+
+  <div class="container" style="margin-top:92px">
+    <div class="card">
+      <h2>Prediction History</h2>
+      <div style="margin-top:12px">
+        <table class="table" id="histTable">
+          <thead><tr><th>Time</th><th>Sample</th><th>Key results</th><th>Actions</th></tr></thead>
+          <tbody></tbody>
+        </table>
+        <div style="margin-top:12px"><button class="btn" id="clearHist">Clear history</button> <button class="btn secondary" id="exportAll">Export All CSV</button></div>
+      </div>
+    </div>
+  </div>
+
+<script>
+function formatTime(ts){ const d=new Date(ts); return d.toLocaleString(); }
+function buildRow(entry,i){
+  const meta = entry.meta||{}; const res = entry.res||{};
+  const sample = (meta.formula||'—') + (meta.size? ' · '+meta.size+' nm':'') + (meta.shape? ' · '+meta.shape:'');
+  const keys = `σ:${res.electrical||'—'} · κ:${res.thermal||'—'} · ρ:${res.density||'—'}`;
+  return `<tr data-i="${i}"><td>${formatTime(entry.t)}</td><td>${sample}</td><td>${keys}</td>
+    <td>
+      <button data-i="${i}" class="btn viewBtn">View</button>
+      <button data-i="${i}" class="btn secondary dlBtn">Download</button>
+    </td></tr>`;
+}
+
+function refresh(){
+  const hist = JSON.parse(localStorage.getItem('nanotech_history')||'[]');
+  const tbody = document.querySelector('#histTable tbody'); tbody.innerHTML='';
+  hist.forEach((h,idx)=> tbody.insertAdjacentHTML('beforeend', buildRow(h,idx)));
+  // bind
+  document.querySelectorAll('.viewBtn').forEach(b=>{
+    b.onclick = function(){ const i=this.dataset.i; const hist=JSON.parse(localStorage.getItem('nanotech_history')||'[]'); localStorage.setItem('nanotech_last_result', JSON.stringify(hist[i])); location.href='result.html'; };
+  });
+  document.querySelectorAll('.dlBtn').forEach(b=>{
+    b.onclick = function(){ const i=this.dataset.i; const hist=JSON.parse(localStorage.getItem('nanotech_history')||'[]'); const item=hist[i]; 
+      const rows = [['property','value'],['electrical',item.res.electrical],['thermal',item.res.thermal],['strength',item.res.strength],['density',item.res.density],['stability',item.res.stability],['crystallinity',item.res.crystallinity]];
+      const csv = rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\\n');
+      const blob=new Blob([csv],{type:'text/csv'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='prediction_'+i+'.csv'; a.click(); URL.revokeObjectURL(url);
+    };
+  });
+}
+
+document.getElementById('clearHist').addEventListener('click', function(){ if(confirm('Clear all history?')){ localStorage.removeItem('nanotech_history'); refresh(); } });
+document.getElementById('exportAll').addEventListener('click', function(){
+  const hist = JSON.parse(localStorage.getItem('nanotech_history')||'[]');
+  if(!hist.length){ alert('No history'); return; }
+  let out = 'time,formula,size,shape,electrical,thermal,strength,density,stability,crystallinity\\n';
+  hist.forEach(h=>{
+    out += `"${new Date(h.t).toISOString()}","${(h.meta.formula||'')}","${(h.meta.size||'')}","${(h.meta.shape||'')}","${(h.res.electrical||'')}","${(h.res.thermal||'')}","${(h.res.strength||'')}","${(h.res.density||'')}","${(h.res.stability||'')}","${(h.res.crystallinity||'')}"\\n`;
+  });
+  const blob=new Blob([out],{type:'text/csv'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='nanotech_history.csv'; a.click(); URL.revokeObjectURL(url);
+});
+
+refresh();
+</script>
+</body>
+</html>

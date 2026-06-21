@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Nanotech Properties — Login</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="navbar">
+    <div class="brand"><img src="5742b17f-782e-4e38-8477-e62b30fb2b2f.png" alt="logo"><h1>Nanotech Properties</h1></div>
+    <div class="nav-links"><a href="register.html">Create account</a></div>
+  </div>
+
+  <div class="hero">
+    <div class="container auth-wrap">
+      <div class="brand-block">
+        <img src="5742b17f-782e-4e38-8477-e62b30fb2b2f.png" style="width:180px;height:140px" alt="logo">
+        <h2>Welcome back</h2>
+        <p>AI-driven predictions for nanoscale material properties — conductivity, strength, density and more.</p>
+      </div>
+
+      <div>
+        <div class="form">
+          <div style="margin-bottom:12px"><div class="label">Email</div><input id="email" class="input" type="email" placeholder="you@domain.com"></div>
+          <div style="margin-bottom:12px"><div class="label">Password</div><input id="password" class="input" type="password" placeholder="••••••••"></div>
+          <div style="display:flex;gap:8px">
+            <button class="btn" id="loginBtn">Sign in</button>
+            <a class="btn secondary" href="register.html">Register</a>
+          </div>
+          <div class="footer" style="margin-top:10px">This is a demo frontend — any valid email/password will let you proceed.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+document.getElementById('loginBtn').addEventListener('click', function(){
+  // simple client-side auth: store a token and go to dashboard
+  localStorage.setItem('nanotech_user', document.getElementById('email').value || 'guest@nanotech');
+  location.href = 'dashboard.html';
+});
+</script>
+</body>
+</html>

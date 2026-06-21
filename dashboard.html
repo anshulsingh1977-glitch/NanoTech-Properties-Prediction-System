@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Dashboard — Nanotech</title><link rel="stylesheet" href="styles.css"></head>
+<body>
+  <div class="navbar">
+    <div class="brand"><img src="5742b17f-782e-4e38-8477-e62b30fb2b2f.png" alt="logo"><h1>Nanotech Properties</h1></div>
+    <div class="nav-links">
+      <a href="predict.html">Predict</a>
+      <a href="upload.html">Upload CSV</a>
+      <a href="history.html">History</a>
+      <a href="#" id="logout">Logout</a>
+    </div>
+  </div>
+
+  <div class="container" style="margin-top:92px">
+    <div class="card" style="display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <h2 style="margin:0 0 8px">Welcome, <span id="userName">Researcher</span></h2>
+        <div class="small">Start a prediction or upload data for batch runs.</div>
+      </div>
+      <div>
+        <a class="btn" href="predict.html">New Prediction</a>
+      </div>
+    </div>
+
+    <div style="height:20px"></div>
+
+    <div class="grid">
+      <div class="card">
+        <h3>Quick Predict</h3>
+        <p class="small">Detailed single-sample prediction flow — go to Predict page for full form.</p>
+        <div style="margin-top:12px"><a class="btn" href="predict.html">Open Predict</a></div>
+      </div>
+
+      <div class="card">
+        <h3>Batch Upload</h3>
+        <p class="small">Upload a CSV of samples to run multiple predictions.</p>
+        <div style="margin-top:12px"><a class="btn" href="upload.html">Upload CSV</a></div>
+      </div>
+
+      <div class="card">
+        <h3>Prediction History</h3>
+        <p class="small">View previous predictions saved in your browser.</p>
+        <div style="margin-top:12px"><a class="btn" href="history.html">View History</a></div>
+      </div>
+    </div>
+
+    <div class="footer">Demo site — predictions are illustrative. Replace with ML microservice to provide real results.</div>
+  </div>
+
+<script>
+const user = localStorage.getItem('nanotech_user') || 'Researcher';
+document.getElementById('userName').textContent = user;
+document.getElementById('logout').addEventListener('click', function(e){
+  e.preventDefault();
+  localStorage.removeItem('nanotech_user');
+  location.href = 'login.html';
+});
+</script>
+</body>
+</html>

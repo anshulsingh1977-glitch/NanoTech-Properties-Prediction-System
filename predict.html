@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Predict — Nanotech</title><link rel="stylesheet" href="styles.css"></head>
+<body>
+  <div class="navbar">
+    <div class="brand"><img src="5742b17f-782e-4e38-8477-e62b30fb2b2f.png" alt="logo"><h1>Nanotech Properties</h1></div>
+    <div class="nav-links">
+      <a href="dashboard.html">Dashboard</a>
+      <a href="upload.html">Upload CSV</a>
+      <a href="history.html">History</a>
+      <a href="#" id="logout2">Logout</a>
+    </div>
+  </div>
+
+  <div class="container" style="margin-top:92px">
+    <div class="card">
+      <h2>Nanomaterial Prediction — Detailed Input</h2>
+      <p class="small">Fill in as many fields as possible for better model inputs (demo).</p>
+
+      <form id="predictForm" style="margin-top:12px">
+        <div class="predict-grid">
+          <div>
+            <div class="label">Chemical formula</div>
+            <input id="formula" class="input" placeholder="e.g. TiO2">
+          </div>
+          <div>
+            <div class="label">Particle size (nm)</div>
+            <input id="size" class="input" type="number" placeholder="e.g. 12">
+          </div>
+          <div>
+            <div class="label">Shape</div>
+            <select id="shape" class="select">
+              <option>Sphere</option><option>Rod</option><option>Sheet</option><option>Irregular</option>
+            </select>
+          </div>
+
+          <div>
+            <div class="label">Morphology notes</div>
+            <input id="morph" class="input" placeholder="porous, dense, core-shell...">
+          </div>
+          <div>
+            <div class="label">Synthesis method</div>
+            <select id="synth" class="select">
+              <option>Sol-gel</option><option>CVD</option><option>Hydrothermal</option><option>Other</option>
+            </select>
+          </div>
+          <div>
+            <div class="label">Calcination temperature (°C)</div>
+            <input id="temp" class="input" type="number" placeholder="e.g. 450">
+          </div>
+
+          <div>
+            <div class="label">Dopants / Additives</div>
+            <input id="dopants" class="input" placeholder="e.g. Fe 2%, P 0.5%">
+          </div>
+          <div>
+            <div class="label">Atmosphere</div>
+            <select id="atm" class="select">
+              <option>Air</option><option>Inert</option><option>Reducing</option><option>Vacuum</option>
+            </select>
+          </div>
+          <div>
+            <div class="label">Additional notes</div>
+            <input id="notes" class="input" placeholder="Any experimental comments">
+          </div>
+        </div>
+
+        <div style="margin-top:12px;display:flex;gap:8px">
+          <button class="btn" type="button" id="runPredict">Run Prediction</button>
+          <button class="btn secondary" id="saveSample" type="button">Save Sample</button>
+          <a class="btn secondary" href="dashboard.html">Back</a>
+        </div>
+      </form>
+    </div>
+
+    <div id="resultsArea" style="margin-top:16px"></div>
+  </div>
+
+<script>
+document.getElementById('logout2').addEventListener('click', function(e){
+  e.preventDefault(); localStorage.removeItem('nanotech_user'); location.href='login.html';
+});
+
+// helper: generate demo numeric outputs
+function demoPredict(){
+  return {
+    electrical: (Math.random()*1e3).toFixed(3) + ' S/m',
+    thermal: (Math.random()*300).toFixed(3) + ' W/m·K',
+    strength: (Math.random()*2000).toFixed(1) + ' MPa',
+    density: (Math.random()*10).toFixed(3) + ' g/cm³',
+    stability: (Math.random()*1).toFixed(3),
+    crystallinity: (Math.random()*100).toFixed(1) + ' %'
+  };
+}
+
+function renderResults(res, meta){
+  const area = document.getElementById('resultsArea');
+  area.innerHTML = `
+    <div class="card">
+      <h3>Prediction results (Card view)</h3>
+      <div class="row" style="margin-top:8px">
+        <div style="flex:1">
+          <div class="label">Sample</div><div class="small">${meta.formula || '—'} · ${meta.shape || ''} · ${meta.size? meta.size+' nm':''}</div>
+        </div>
+        <div style="text-align:right;color:var(--muted);font-size:13px">Demo prediction</div>
+      </div>
+
+      <div class="result-cards" style="margin-top:12px">
+        <div class="result-item"><div class="result-title">Electrical Conductivity</div><div class="result-value">${res.electrical}</div></div>
+        <div class="result-item"><div class="result-title">Thermal Conductivity</div><div class="result-value">${res.thermal}</div></div>
+        <div class="result-item"><div class="result-title">Strength</div><div class="result-value">${res.strength}</div></div>
+
+        <div class="result-item"><div class="result-title">Density</div><div class="result-value">${res.density}</div></div>
+        <div class="result-item"><div class="result-title">Stability</div><div class="result-value">${res.stability}</div></div>
+        <div class="result-item"><div class="result-title">Crystallinity</div><div class="result-value">${res.crystallinity}</div></div>
+      </div>
+
+      <div style="margin-top:12px;display:flex;gap:8px">
+        <a class="btn" id="goResults" href="result.html">Open Result Page</a>
+        <button class="btn secondary" id="downloadCSV">Download CSV</button>
+      </div>
+    </div>
+  `;
+
+  // save to temporary slot so result.html can read it
+  localStorage.setItem('nanotech_last_result', JSON.stringify({res,meta,t:Date.now()}));
+
+  document.getElementById('downloadCSV').addEventListener('click', function(){
+    // create CSV
+    const rows = [
+      ['property','value'],
+      ['electrical', res.electrical],
+      ['thermal', res.thermal],
+      ['strength', res.strength],
+      ['density', res.density],
+      ['stability', res.stability],
+      ['crystallinity', res.crystallinity]
+    ];
+    const csv = rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\\n');
+    const blob = new Blob([csv], {type:'text/csv'}); const url=URL.createObjectURL(blob);
+    const a=document.createElement('a'); a.href=url; a.download='prediction.csv'; a.click(); URL.revokeObjectURL(url);
+  });
+}
+
+document.getElementById('runPredict').addEventListener('click', function(){
+  const meta = {
+    formula: document.getElementById('formula').value,
+    size: document.getElementById('size').value,
+    shape: document.getElementById('shape').value,
+    morph: document.getElementById('morph').value,
+    synth: document.getElementById('synth').value,
+    temp: document.getElementById('temp').value,
+    dopants: document.getElementById('dopants').value,
+    atm: document.getElementById('atm').value,
+    notes: document.getElementById('notes').value,
+  };
+  const res = demoPredict();
+  renderResults(res, meta);
+  // also append to history
+  const hist = JSON.parse(localStorage.getItem('nanotech_history')||'[]');
+  hist.unshift({meta,res,t:Date.now()});
+  localStorage.setItem('nanotech_history', JSON.stringify(hist));
+});
+
+document.getElementById('saveSample').addEventListener('click', function(){
+  const sample = {
+    formula: document.getElementById('formula').value,
+    size: document.getElementById('size').value,
+    shape: document.getElementById('shape').value,
+    notes: document.getElementById('notes').value
+  };
+  const saved = JSON.parse(localStorage.getItem('nanotech_samples')||'[]');
+  saved.unshift(sample);
+  localStorage.setItem('nanotech_samples', JSON.stringify(saved));
+  alert('Sample saved locally.');
+});
+</script>
+</body>
+</html>

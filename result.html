@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Result — Nanotech</title><link rel="stylesheet" href="styles.css"></head>
+<body>
+  <div class="navbar">
+    <div class="brand"><img src="5742b17f-782e-4e38-8477-e62b30fb2b2f.png" alt="logo"><h1>Nanotech Properties</h1></div>
+    <div class="nav-links">
+      <a href="predict.html">Predict</a><a href="dashboard.html">Dashboard</a><a href="history.html">History</a>
+    </div>
+  </div>
+
+  <div class="container" style="margin-top:92px">
+    <div id="resultWrap" class="card">
+      <h2>Prediction result</h2>
+      <div id="detailArea" style="margin-top:12px"></div>
+    </div>
+  </div>
+
+<script>
+const slot = localStorage.getItem('nanotech_last_result');
+if(!slot){ document.getElementById('detailArea').innerHTML = '<div class="small">No result found. Run a prediction first.</div>'; }
+else{
+  const payload = JSON.parse(slot);
+  const res = payload.res, meta = payload.meta;
+  document.getElementById('detailArea').innerHTML = `
+    <div class="small">Sample: ${meta.formula || '—'} · ${meta.shape || ''} · ${meta.size ? meta.size+' nm' : ''}</div>
+    <div class="result-cards" style="margin-top:12px">
+      <div class="result-item"><div class="result-title">Electrical Conductivity</div><div class="result-value">${res.electrical}</div></div>
+      <div class="result-item"><div class="result-title">Thermal Conductivity</div><div class="result-value">${res.thermal}</div></div>
+      <div class="result-item"><div class="result-title">Strength</div><div class="result-value">${res.strength}</div></div>
+      <div class="result-item"><div class="result-title">Density</div><div class="result-value">${res.density}</div></div>
+      <div class="result-item"><div class="result-title">Stability</div><div class="result-value">${res.stability}</div></div>
+      <div class="result-item"><div class="result-title">Crystallinity</div><div class="result-value">${res.crystallinity}</div></div>
+    </div>
+    <div style="margin-top:12px">
+      <a class="btn" href="dashboard.html">Back to dashboard</a>
+      <a class="btn secondary" id="saveToHistory">Save to History</a>
+    </div>
+  `;
+  document.getElementById('saveToHistory').addEventListener('click', function(){
+    const hist = JSON.parse(localStorage.getItem('nanotech_history')||'[]');
+    hist.unshift({meta,res,t:Date.now()});
+    localStorage.setItem('nanotech_history', JSON.stringify(hist));
+    alert('Saved to history.');
+  });
+}
+</script>
+</body>
+</html>

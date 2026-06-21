@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Upload CSV — Nanotech</title><link rel="stylesheet" href="styles.css"></head>
+<body>
+  <div class="navbar">
+    <div class="brand"><img src="5742b17f-782e-4e38-8477-e62b30fb2b2f.png" alt="logo"><h1>Nanotech Properties</h1></div>
+    <div class="nav-links">
+      <a href="dashboard.html">Dashboard</a><a href="predict.html">Predict</a><a href="history.html">History</a>
+    </div>
+  </div>
+
+  <div class="container" style="margin-top:92px">
+    <div class="card">
+      <h2>Upload CSV for Batch Predictions</h2>
+      <p class="small">CSV must have header row. Example headers: formula,size,shape,morph,synth,temp,dopants,atm,notes</p>
+
+      <div class="upload-area" style="margin-top:12px">
+        <input type="file" id="csvFile" accept=".csv"><div style="height:12px"></div>
+        <button class="btn" id="processCSV">Process CSV (client-side)</button>
+        <div class="small" style="margin-top:8px">This demo will generate placeholder predictions for each row and save them to history.</div>
+      </div>
+    </div>
+  </div>
+
+<script>
+document.getElementById('processCSV').addEventListener('click', function(){
+  const f = document.getElementById('csvFile').files[0];
+  if(!f){ alert('Please choose a CSV file.'); return; }
+  const reader = new FileReader();
+  reader.onload = function(e){
+    const txt = e.target.result;
+    const lines = txt.split(/\\r?\\n/).filter(Boolean);
+    const header = lines.shift().split(',').map(h=>h.trim());
+    const toHist = JSON.parse(localStorage.getItem('nanotech_history')||'[]');
+    lines.forEach(line=>{
+      const cols = line.split(',').map(c=>c.trim());
+      const meta = {};
+      header.forEach((h,i)=> meta[h]=cols[i]||'');
+      // demo predict:
+      const res = {
+        electrical: (Math.random()*1e3).toFixed(3)+' S/m',
+        thermal: (Math.random()*300).toFixed(3)+' W/m·K',
+        strength: (Math.random()*2000).toFixed(1)+' MPa',
+        density: (Math.random()*10).toFixed(3)+' g/cm³',
+        stability: (Math.random()).toFixed(3),
+        crystallinity:(Math.random()*100).toFixed(1)+' %'
+      };
+      toHist.unshift({meta,res,t:Date.now()});
+    });
+    localStorage.setItem('nanotech_history', JSON.stringify(toHist));
+    alert('Processed '+lines.length+' rows. Saved to history.');
+    location.href='history.html';
+  };
+  reader.readAsText(f);
+});
+</script>
+</body>
+</html>
